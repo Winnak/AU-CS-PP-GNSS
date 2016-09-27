@@ -2,7 +2,7 @@ package dk.au.cs.pervasivepositioninggps;
 
 import android.location.GpsStatus.NmeaListener;
 import android.util.Log;
-import android.widget.Toast;
+import java.util.ArrayList;
 
 /**
  * Created by Erik on 27-09-2016.
