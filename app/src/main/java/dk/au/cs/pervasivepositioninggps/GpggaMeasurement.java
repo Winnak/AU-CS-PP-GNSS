@@ -38,7 +38,7 @@ public class GpggaMeasurement {
         sb.append(time.substring(2,4));
         sb.append(":");
         sb.append(time.substring(4,6));
-        sb.append("Z</when></TimeStamp></description><Point><coordinates>");
+        sb.append("Z</when></TimeStamp><Point><coordinates>");
         sb.append(longitude);
         sb.append(",");
         sb.append(latitude);
