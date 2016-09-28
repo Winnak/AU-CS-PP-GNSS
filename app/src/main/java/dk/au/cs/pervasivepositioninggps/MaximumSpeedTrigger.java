@@ -14,22 +14,24 @@ public class MaximumSpeedTrigger extends Trigger {
     }
 
     @Override
-    public boolean isTriggered(GpggaMeasurement gm) {
-        double startTime = Double.parseDouble(nm.measurements.get(nm.measurements.size()-1).time);
-        double endTime = Double.parseDouble(gm.time);
+    public boolean isTriggered(GpggaMeasurement newMeasurement) {
+        GpggaMeasurement previousMeasurement = nm.measurements.get(nm.measurements.size()-1);
+
+        double startTime = Double.parseDouble(previousMeasurement.time);
+        double endTime = Double.parseDouble(newMeasurement.time);
 
         double r = 6364;
-        double lat1 = nm.measurements.get(nm.measurements.size()-1).longitude;
-        double lat2 = gm.longitude;
+        double lat1 = previousMeasurement.longitude;
+        double lat2 = newMeasurement.longitude;
         double dlat = lat2 - lat1;
-        double dlon = gm.latitude - nm.measurements.get(nm.measurements.size()-1).latitude;
+        double dlon = newMeasurement.latitude - previousMeasurement.latitude;
         double a = Math.pow(Math.sin(dlat/2), 2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dlon/2), 2);
         double c = 2 * Math.atan2( Math.sqrt(a), Math.sqrt(1-a) );
         double d = r * c;
         double speed = (d / (endTime - startTime));
         double reFix = speed / m_TriggerSpeed;
         if (reFix < 1){
-            savedPositions.add(gm);
+            savedPositions.add(newMeasurement);
             return true;
         }
         return false;

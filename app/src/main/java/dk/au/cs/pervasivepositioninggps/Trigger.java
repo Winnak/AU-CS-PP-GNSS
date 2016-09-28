@@ -8,5 +8,5 @@ import java.util.ArrayList;
 
 public abstract class Trigger {
     public ArrayList<GpggaMeasurement> savedPositions = new ArrayList<>();
-    public abstract boolean isTriggered(GpggaMeasurement gm);
+    public abstract boolean isTriggered(GpggaMeasurement newMeasurement);
 }

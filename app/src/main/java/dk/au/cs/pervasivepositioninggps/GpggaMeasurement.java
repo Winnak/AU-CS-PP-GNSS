@@ -1,5 +1,8 @@
 package dk.au.cs.pervasivepositioninggps;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by peppe_000 on 27-09-2016.
  */
@@ -32,7 +35,9 @@ public class GpggaMeasurement {
     public String toKML()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("<Placemark><TimeStamp><when>2016-09-27T");
+        sb.append("<Placemark><TimeStamp><when>");
+        sb.append(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        sb.append("T");
         sb.append(time.substring(0,2));
         sb.append(":");
         sb.append(time.substring(2,4));

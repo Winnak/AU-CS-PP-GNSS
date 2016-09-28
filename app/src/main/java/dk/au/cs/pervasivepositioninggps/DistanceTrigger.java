@@ -1,10 +1,5 @@
 package dk.au.cs.pervasivepositioninggps;
 
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.util.Timer;
-import java.util.concurrent.TimeUnit;
-
 /**
  * Created by peppe_000 on 28-09-2016.
  */
@@ -20,8 +15,9 @@ public class DistanceTrigger extends Trigger {
 
     @Override
     public boolean isTriggered(GpggaMeasurement gm) {
+        GpggaMeasurement previousMeasurement = nm.measurements.get(nm.measurements.size()-1);
         double r = 6364;
-        double lat1 = nm.measurements.get(nm.measurements.size()-1).longitude;
+        double lat1 = previousMeasurement.longitude;
         double lat2 = gm.longitude;
         double dlat = lat2 - lat1;
         double dlon = gm.latitude - nm.measurements.get(nm.measurements.size()-1).latitude;

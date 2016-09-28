@@ -15,8 +15,8 @@ public class TimeTrigger extends Trigger {
 
     @Override
     public boolean isTriggered(GpggaMeasurement gm) {
-
-        double startTime = Double.parseDouble(nm.measurements.get(nm.measurements.size()-1).time);
+        GpggaMeasurement previousMeasurement = nm.measurements.get(nm.measurements.size()-1);
+        double startTime = Double.parseDouble(previousMeasurement.time);
         double endTime = Double.parseDouble(gm.time);
 
         if (endTime - startTime > m_TriggerTime){
