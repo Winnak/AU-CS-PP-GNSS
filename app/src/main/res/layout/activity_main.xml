@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
@@ -10,15 +11,79 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="dk.au.cs.pervasivepositioninggps.MainActivity">
 
-    <Button
-        android:text="Get Fix"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="13dp"
-        android:id="@+id/btn_GetFix"
-        android:elevation="6dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true"
-        android:onClick="onGetFixClicked" />
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:srcCompat="@android:drawable/ic_popup_sync"
+            android:id="@+id/statusIcon"
+            android:layout_row="0"
+            android:layout_column="0" />
+
+        <TextView
+            android:text="Measurements: 0"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/labelMeasurementCount" />
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/radioGroup">
+
+            <RadioButton
+                android:text="Trigger 1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/trigger1"
+                android:layout_weight="1" />
+
+            <RadioButton
+                android:text="Trigger 2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/trigger2"
+                android:layout_weight="1" />
+
+            <RadioButton
+                android:text="Trigger 3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/trigger3"
+                android:layout_weight="1" />
+
+            <RadioButton
+                android:text="Trigger 4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/trigger4"
+                android:layout_weight="1" />
+        </RadioGroup>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/inputField" />
+
+        <Button
+            android:text="Start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonStart"
+            android:onClick="onStartBtnClicked" />
+
+        <Button
+            android:text="Save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonSave"
+            android:onClick="onSaveBtnClicked" />
+    </LinearLayout>
+
 </RelativeLayout>
