@@ -10,15 +10,4 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="dk.au.cs.pervasivepositioninggps.MainActivity">
 
-    <Button
-        android:text="Get Fix"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="13dp"
-        android:id="@+id/btn_GetFix"
-        android:elevation="6dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true"
-        android:onClick="onGetFixClicked" />
 </RelativeLayout>
