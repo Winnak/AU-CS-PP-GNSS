@@ -1,25 +1,23 @@
 package dk.au.cs.pervasivepositioninggps;
 
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.util.Timer;
-import java.util.concurrent.TimeUnit;
-
 /**
- * Created by peppe_000 on 28-09-2016.
+ * Created by Erik on 28-09-2016.
  */
 
-public class DistanceTrigger extends Trigger {
-    private int m_TriggerDistance;
+public class MaximumSpeedTrigger extends Trigger {
+    private int m_TriggerSpeed;
     private NmeaMonitor nm;
 
-    public DistanceTrigger(int distance)
+    public MaximumSpeedTrigger(int speed)
     {
-        m_TriggerDistance = distance;
+        m_TriggerSpeed = speed;
     }
 
     @Override
     public boolean isTriggered(GpggaMeasurement gm) {
+        double startTime = Double.parseDouble(nm.measurements.get(nm.measurements.size()-1).time);
+        double endTime = Double.parseDouble(gm.time);
+
         double r = 6364;
         double lat1 = nm.measurements.get(nm.measurements.size()-1).longitude;
         double lat2 = gm.longitude;
@@ -28,7 +26,9 @@ public class DistanceTrigger extends Trigger {
         double a = Math.pow(Math.sin(dlat/2), 2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dlon/2), 2);
         double c = 2 * Math.atan2( Math.sqrt(a), Math.sqrt(1-a) );
         double d = r * c;
-        if (d > m_TriggerDistance){
+        double speed = (d / (endTime - startTime));
+        double reFix = speed / m_TriggerSpeed;
+        if (reFix < 1){
             savedPositions.add(gm);
             return true;
         }
