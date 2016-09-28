@@ -25,10 +25,10 @@
             android:layout_column="0" />
 
         <TextView
-            android:text="TextView"
+            android:text="Measurements: 0"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textView2" />
+            android:id="@+id/labelMeasurementCount" />
 
         <RadioGroup
             android:layout_width="match_parent"

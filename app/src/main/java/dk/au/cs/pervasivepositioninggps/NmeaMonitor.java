@@ -9,6 +9,8 @@ import android.location.GpsStatus.NmeaListener;
 import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -17,14 +19,23 @@ import java.util.ArrayList;
  */
 
 public class NmeaMonitor implements NmeaListener {
+    private final int kFoundColor = 0xAA00FF00;
+    private final int kSearchingColor = 0xAAFFFF00;
+
     public ArrayList<GpggaMeasurement> measurements = new ArrayList<GpggaMeasurement>();
 
     private LocationManager m_LocMan;
     private Context m_AppContext;
+    private ImageView m_StatusIcon;
+    TextView m_MesaurementCountLabel;
 
-    public NmeaMonitor(LocationManager locman, Context appContext) {
+    public NmeaMonitor(LocationManager locman, Context appContext, ImageView statusIcon, TextView countLabel) {
         this.m_LocMan = locman;
         this.m_AppContext = appContext;
+        this.m_StatusIcon = statusIcon;
+        this.m_MesaurementCountLabel = countLabel;
+
+        m_StatusIcon.setColorFilter(kFoundColor);
     }
 
     public void getFix() {
@@ -58,6 +69,13 @@ public class NmeaMonitor implements NmeaListener {
         if (fix.isValid()) {
             Log.i("Localization", timestamp + ": " + nmea);
             measurements.add(fix);
+
+            m_StatusIcon.setColorFilter(kFoundColor);
+            m_MesaurementCountLabel.setText("Measurements: " + measurements.size());
+        }
+        else
+        {
+            m_StatusIcon.setColorFilter(kSearchingColor);
         }
     }
 }
