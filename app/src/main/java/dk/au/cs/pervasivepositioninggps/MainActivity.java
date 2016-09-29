@@ -23,14 +23,28 @@ public class MainActivity extends AppCompatActivity {
     RadioGroup m_RadioGroup;
     EditText m_ValueField;
     Button m_StartButton;
+    Button m_FirstFixButton;
     ImageView m_StatusIcon;
     TextView m_MesaurementCountLabel;
 
     public void onStartBtnClicked(View view)
     {
+        int value = 0;
+        try
+        {
+            value = Integer.parseInt(m_ValueField.getText().toString());
+        }
+        catch (Exception ex)
+        {
+            Log.e("Parsing", m_ValueField.getText().toString() + ": " + ex.toString(), ex);
+            Toast.makeText(getApplicationContext(), "Please enter a valid value", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         switch (m_RadioGroup.getCheckedRadioButtonId())
         {
-            case R.id.trigger1:
+            case R.id.triggerTime:
+                m_Monitor.getTimeFix(value);
                 break;
             case R.id.trigger2:
                 break;
@@ -42,25 +56,37 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Error: No trigger type was selected", Toast.LENGTH_SHORT).show();
                 return;
         }
-        m_Started = true;
-        setEnableRadioButtons(false);
-        m_StartButton.setEnabled(false);
+
+        setWidgetEnables(false);
     }
 
     public void onSaveBtnClicked(View view)
     {
-        m_Started = false;
         Toast.makeText(getApplicationContext(), "File saved", Toast.LENGTH_SHORT).show();
-        m_StartButton.setEnabled(true);
-        setEnableRadioButtons(true);
-        m_RadioGroup.clearCheck();
+        setWidgetEnables(true);
 
         m_MesaurementCountLabel.setText("Measurements: " + m_Monitor.measurements.size());
     }
 
     public void onTestClicked(View view)
     {
-        m_Monitor.getFix();
+        m_Monitor.getSingleFix();
+        setWidgetEnables(false);
+    }
+
+    public void onStopBtnClicked(View view)
+    {
+        m_Monitor.stop();
+        setWidgetEnables(true);
+    }
+
+    private void setWidgetEnables(boolean enabled) {
+        m_Started = !enabled;
+        m_StartButton.setEnabled(enabled);
+        setEnableRadioButtons(enabled);
+        m_ValueField.setEnabled(enabled);
+        m_FirstFixButton.setEnabled(enabled);
+        m_RadioGroup.clearCheck();
     }
 
     private void setEnableRadioButtons(boolean enable)
@@ -85,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
         m_RadioGroup = (RadioGroup)findViewById(R.id.radioGroup);
         m_ValueField = (EditText) findViewById(R.id.inputField);
         m_StartButton = (Button) findViewById(R.id.buttonStart);
+        m_FirstFixButton = (Button) findViewById(R.id.buttonTest);
         m_StatusIcon = (ImageView) findViewById(R.id.statusIcon);
         m_MesaurementCountLabel = (TextView)findViewById(R.id.labelMeasurementCount);
 

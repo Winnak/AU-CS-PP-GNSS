@@ -10,6 +10,7 @@ import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.accessibility.AccessibilityManagerCompat;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,7 +30,8 @@ public class NmeaMonitor implements NmeaListener {
     private LocationManager m_LocMan;
     private Context m_AppContext;
     private ImageView m_StatusIcon;
-    TextView m_MesaurementCountLabel;
+    private TextView m_MesaurementCountLabel;
+    private PendingIntent m_Intent;
 
     public NmeaMonitor(LocationManager locman, Context appContext, ImageView statusIcon, TextView countLabel) {
         this.m_LocMan = locman;
@@ -37,15 +39,16 @@ public class NmeaMonitor implements NmeaListener {
         this.m_StatusIcon = statusIcon;
         this.m_MesaurementCountLabel = countLabel;
 
-        m_StatusIcon.setColorFilter(kFoundColor);
-    }
 
-    public void getFix() {
+        m_StatusIcon.setColorFilter(kFoundColor);
+
         Intent intent = new Intent(m_AppContext, this.getClass());
 
-        PendingIntent pi = PendingIntent.getBroadcast(m_AppContext, 0, intent,
+        m_Intent = PendingIntent.getBroadcast(m_AppContext, 0, intent,
                 PendingIntent.FLAG_CANCEL_CURRENT);
+    }
 
+    public void getSingleFix() {
         if (ActivityCompat.checkSelfPermission(m_AppContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(m_AppContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -57,7 +60,30 @@ public class NmeaMonitor implements NmeaListener {
             Log.e("NMEA Monitor", "Could not find shit");
             return;
         }
-        m_LocMan.requestSingleUpdate(LocationManager.GPS_PROVIDER, pi);
+        m_LocMan.requestSingleUpdate(LocationManager.GPS_PROVIDER, m_Intent);
+    }
+
+
+    public void getTimeFix(int time) {
+        if (ActivityCompat.checkSelfPermission(m_AppContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(m_AppContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            Log.e("NMEA Monitor", "Could not find shit");
+            return;
+        }
+        m_LocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, time, 1, m_Intent);
+    }
+
+    public void stop()
+    {
+        m_LocMan.removeNmeaListener(this);
+        m_StatusIcon.setColorFilter(kFoundColor);
+        Toast.makeText(m_AppContext, "Stopping search", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -68,19 +94,19 @@ public class NmeaMonitor implements NmeaListener {
 
         GpggaMeasurement fix = GpggaMeasurement.parseString(nmea);
 
-        //Log.i("Nmea Monitor", fix.toString());
-
         if (fix.isValid()) {
             Log.i("Localization", timestamp + ": " + nmea);
             measurements.add(fix);
 
             m_StatusIcon.setColorFilter(kFoundColor);
             m_MesaurementCountLabel.setText("Measurements: " + measurements.size());
-            Toast.makeText(m_AppContext, "Found fix", Toast.LENGTH_SHORT).show();
+            Toast.makeText(m_AppContext, "Found fix. " + fix.toString(), Toast.LENGTH_SHORT).show();
+            Log.i("Nmea Monitor", fix.toString());
         }
         else
         {
             m_StatusIcon.setColorFilter(kSearchingColor);
+            Log.v("Localization", "Package received" + fix.toString());
         }
     }
 }
