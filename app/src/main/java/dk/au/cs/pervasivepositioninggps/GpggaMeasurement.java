@@ -1,5 +1,7 @@
 package dk.au.cs.pervasivepositioninggps;
 
+import android.util.Log;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -19,10 +21,17 @@ public class GpggaMeasurement {
         String[] array = nmea.split(",");
         GpggaMeasurement newGpgga = new GpggaMeasurement();
 
-        newGpgga.latitude = Double.parseDouble(array[2]);
-        newGpgga.longitude = Double.parseDouble(array[4]);
-        newGpgga.statusCode = Integer.parseInt(array[6]);
-        newGpgga.time = array[1];
+        try
+        {
+            newGpgga.latitude = Double.parseDouble(array[2]);
+            newGpgga.longitude = Double.parseDouble(array[4]);
+            newGpgga.statusCode = Integer.parseInt(array[6]);
+            newGpgga.time = array[1];
+        }
+        catch (Exception ex)
+        {
+            //Log.e("Nmea Monitor", ex.toString());
+        }
 
         return newGpgga;
     }
@@ -51,4 +60,8 @@ public class GpggaMeasurement {
         return sb.toString();
     }
 
+    @Override
+    public String toString() {
+        return this.statusCode + " - " + time;
+    }
 }

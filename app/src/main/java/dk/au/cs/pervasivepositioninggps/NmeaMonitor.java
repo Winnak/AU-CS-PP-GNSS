@@ -8,9 +8,11 @@ import android.content.pm.PackageManager;
 import android.location.GpsStatus.NmeaListener;
 import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.accessibility.AccessibilityManagerCompat;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -66,12 +68,15 @@ public class NmeaMonitor implements NmeaListener {
 
         GpggaMeasurement fix = GpggaMeasurement.parseString(nmea);
 
+        //Log.i("Nmea Monitor", fix.toString());
+
         if (fix.isValid()) {
             Log.i("Localization", timestamp + ": " + nmea);
             measurements.add(fix);
 
             m_StatusIcon.setColorFilter(kFoundColor);
             m_MesaurementCountLabel.setText("Measurements: " + measurements.size());
+            Toast.makeText(m_AppContext, "Found fix", Toast.LENGTH_SHORT).show();
         }
         else
         {

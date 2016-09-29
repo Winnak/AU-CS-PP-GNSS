@@ -84,6 +84,13 @@
             android:layout_height="wrap_content"
             android:id="@+id/buttonSave"
             android:onClick="onSaveBtnClicked" />
+
+        <Button
+            android:text="Test"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonTest"
+            android:onClick="onTestClicked" />
     </LinearLayout>
 
 </RelativeLayout>

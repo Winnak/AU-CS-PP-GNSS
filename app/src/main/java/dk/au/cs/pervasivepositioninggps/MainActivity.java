@@ -58,6 +58,11 @@ public class MainActivity extends AppCompatActivity {
         m_MesaurementCountLabel.setText("Measurements: " + m_Monitor.measurements.size());
     }
 
+    public void onTestClicked(View view)
+    {
+        m_Monitor.getFix();
+    }
+
     private void setEnableRadioButtons(boolean enable)
     {
         for(int i = 0; i < m_RadioGroup.getChildCount(); i++){
