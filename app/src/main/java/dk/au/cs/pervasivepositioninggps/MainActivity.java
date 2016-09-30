@@ -14,7 +14,6 @@ import android.widget.*;
 import java.security.AccessControlException;
 
 public class MainActivity extends AppCompatActivity {
-
     boolean m_Started = false;
 
     LocationManager m_LocMan;
@@ -26,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     Button m_FirstFixButton;
     ImageView m_StatusIcon;
     TextView m_MesaurementCountLabel;
+    TextView m_ReadingsCountLabel;
 
     public void onStartBtnClicked(View view)
     {
@@ -46,11 +46,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.triggerTime:
                 m_Monitor.getTimeFix(value);
                 break;
-            case R.id.trigger2:
+            case R.id.triggerDistance:
+                m_Monitor.getDistanceFix(value);
                 break;
-            case R.id.trigger3:
+            case R.id.triggerMaxSpeed:
+                m_Monitor.getMaxSpeedFix(value);
                 break;
-            case R.id.trigger4:
+            case R.id.triggerMovement:
+                m_Monitor.getMovementFix(value);
                 break;
             default:
                 Toast.makeText(getApplicationContext(), "Error: No trigger type was selected", Toast.LENGTH_SHORT).show();
@@ -62,9 +65,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void onSaveBtnClicked(View view)
     {
+        // Write file
+
+        // If successful run the following, otherwise; return before this.
         Toast.makeText(getApplicationContext(), "File saved", Toast.LENGTH_SHORT).show();
         setWidgetEnables(true);
-
+        m_Monitor.measurements.clear();
         m_MesaurementCountLabel.setText("Measurements: " + m_Monitor.measurements.size());
     }
 
@@ -105,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.e("Initialize", "Failed to acquire the proper permissions. " + Log.getStackTraceString(new AccessControlException("Failed to aquire proper permissions")));
-            return; // we (currently) want the stack trace if this fails.
+            return;
         }
 
         m_RadioGroup = (RadioGroup)findViewById(R.id.radioGroup);
@@ -114,15 +120,8 @@ public class MainActivity extends AppCompatActivity {
         m_FirstFixButton = (Button) findViewById(R.id.buttonTest);
         m_StatusIcon = (ImageView) findViewById(R.id.statusIcon);
         m_MesaurementCountLabel = (TextView)findViewById(R.id.labelMeasurementCount);
+        m_ReadingsCountLabel = (TextView)findViewById(R.id.labelReadingsCount);
 
-        m_Monitor = new NmeaMonitor(m_LocMan, getApplicationContext(), m_StatusIcon, m_MesaurementCountLabel);
-        if(m_LocMan.addNmeaListener(m_Monitor))
-        {
-            Log.i("Initialize", "Successfully started listener for NMEA");
-        }
-        else
-        {
-            Log.e("Initialize", "Failed started listener for NMEA");
-        }
+        m_Monitor = new NmeaMonitor(m_LocMan, getApplicationContext(), m_StatusIcon, m_MesaurementCountLabel, m_ReadingsCountLabel);
     }
 }

@@ -16,19 +16,61 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ImageView
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:srcCompat="@android:drawable/ic_popup_sync"
-            android:id="@+id/statusIcon"
-            android:layout_row="0"
-            android:layout_column="0" />
+            android:layout_height="60dp">
+
+            <ImageView
+                app:srcCompat="@android:drawable/ic_popup_sync"
+                android:id="@+id/statusIcon"
+                android:layout_row="0"
+                android:layout_column="0"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentBottom="true"
+                android:layout_width="60dp"
+                android:layout_height="70dp" />
+
+            <TextView
+                android:text="Status indicators"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/labelStatusIndicators"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_toEndOf="@+id/statusIcon"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textStyle="normal|bold" />
+
+            <TextView
+                android:text="Measurements count: 0"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/labelMeasurementCount"
+                android:layout_below="@+id/labelStatusIndicators"
+                android:layout_toEndOf="@+id/statusIcon"
+                android:textColor="?android:attr/textColorSecondary" />
+
+            <TextView
+                android:text="Readings count: 0"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/labelReadingsCount"
+                android:layout_below="@+id/labelMeasurementCount"
+                android:layout_alignParentEnd="true"
+                android:layout_toEndOf="@+id/statusIcon"
+                android:textColor="?android:attr/textColorSecondary" />
+        </RelativeLayout>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp" />
 
         <TextView
-            android:text="Measurements: 0"
+            android:text="Mode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/labelMeasurementCount" />
+            android:id="@+id/labelMode"
+            android:textStyle="normal|bold" />
 
         <RadioGroup
             android:layout_width="match_parent"
@@ -43,24 +85,24 @@
                 android:layout_weight="1" />
 
             <RadioButton
-                android:text="Trigger 2"
+                android:text="Distance"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/trigger2"
+                android:id="@+id/triggerDistance"
                 android:layout_weight="1" />
 
             <RadioButton
-                android:text="Trigger 3"
+                android:text="Max speed"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/trigger3"
+                android:id="@+id/triggerMaxSpeed"
                 android:layout_weight="1" />
 
             <RadioButton
-                android:text="Trigger 4"
+                android:text="Movement"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/trigger4"
+                android:id="@+id/triggerMovement"
                 android:layout_weight="1" />
         </RadioGroup>
 
@@ -78,12 +120,16 @@
             android:id="@+id/buttonStart"
             android:onClick="onStartBtnClicked" />
 
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="10dp" />
+
         <Button
-            android:text="Save"
+            android:text="Stop Fixing!"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/buttonSave"
-            android:onClick="onSaveBtnClicked" />
+            android:id="@+id/buttonStop"
+            android:onClick="onStopBtnClicked" />
 
         <Button
             android:text="First Fix Test"
@@ -93,11 +139,12 @@
             android:onClick="onTestClicked" />
 
         <Button
-            android:text="Stop Fixing!"
+            android:text="Save"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/buttonStop"
-            android:onClick="onStopBtnClicked" />
+            android:id="@+id/buttonSave"
+            android:onClick="onSaveBtnClicked" />
+
     </LinearLayout>
 
 </RelativeLayout>
