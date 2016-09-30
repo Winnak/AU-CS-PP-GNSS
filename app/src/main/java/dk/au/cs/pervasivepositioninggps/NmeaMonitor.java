@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.SensorEvent;
 import android.location.GpsStatus.NmeaListener;
 import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
@@ -20,28 +21,37 @@ import java.util.Date;
  */
 
 public class NmeaMonitor implements NmeaListener {
+
+
     private enum Mode {
         NONE, SINGLE, TIME, DISTANCE, MAXSPEED, MOVEMENT
     }
-
     private Mode m_Mode = Mode.NONE;
 
     private final int kFoundColor = 0xAA00FF00;
     private final int kSearchingColor = 0xAAFFFF00;
+    private final float kMovementThreshold = 6; // note: distance should be squared.
+    private final long kMovementTimeThreshold = 3500000000L; // note: distance should be squared.
 
     public ArrayList<GpggaMeasurement> measurements = new ArrayList<GpggaMeasurement>();
-    private int m_ReadingsCount = 0;
 
+    private int m_ReadingsCount = 0;
     private LocationManager m_LocMan;
+
     private Context m_AppContext;
     private ImageView m_StatusIcon;
     private TextView m_MeasurementCountLabel;
     private TextView m_ReadingsCountLabel;
     private PendingIntent m_Intent;
-
     private double m_DistanceThreshold = 0;
-    private double m_TimeThreshold = 0;
 
+    private float m_lastMoveX = 0;
+    private float m_lastMoveY = 0;
+    private float m_lastMoveZ = 0;
+    private long m_lastMoveStartTimestamp = 0;
+    private long m_lastMoveTimestamp = 0;
+
+    private double m_TimeThreshold = 0;
     public NmeaMonitor(LocationManager locman, Context appContext, ImageView statusIcon, TextView countLabel, TextView readingscountLabel) {
         this.m_LocMan = locman;
         this.m_AppContext = appContext;
@@ -150,25 +160,30 @@ public class NmeaMonitor implements NmeaListener {
             case TIME:
                 if (timeDifference(previous, fix) >= m_TimeThreshold) {
                     addFix(currentTime, fix);
+                    break;
                 }
                 break;
             case DISTANCE:
                 if (distance(previous, fix) < m_DistanceThreshold) {
                     addFix(currentTime, fix);
+                    break;
                 }
                 break;
             case MAXSPEED:
                 if (timeDifference(previous, fix) >= m_TimeThreshold) {
                     addFix(currentTime, fix);
+                    break;
                 }
 
                 if (distance(previous, fix) < m_DistanceThreshold) {
                     addFix(currentTime, fix);
+                    break;
                 }
             case MOVEMENT:
 
                 if (distance(previous, fix) < m_DistanceThreshold) {
                     addFix(currentTime, fix);
+                    break;
                 }
                 break;
         }
@@ -180,6 +195,25 @@ public class NmeaMonitor implements NmeaListener {
         measurements.add(fix);
         m_MeasurementCountLabel.setText("Measurements (as of " + currentTime  + "): " + measurements.size());
         m_StatusIcon.setColorFilter(kFoundColor);
+    }
+
+    public void reportMovement(SensorEvent event) {
+        final float diffMovement = (m_lastMoveX * m_lastMoveX) - (event.values[0] * event.values[0])
+                + (m_lastMoveY * m_lastMoveY) - (event.values[1] * event.values[1])
+                + (m_lastMoveZ * m_lastMoveZ) - (event.values[2] * event.values[2]);
+
+        if (diffMovement > kMovementThreshold) {
+            if (event.timestamp - m_lastMoveTimestamp > kMovementTimeThreshold) {
+                float moveTime = m_lastMoveStartTimestamp - m_lastMoveTimestamp;
+                m_lastMoveStartTimestamp = event.timestamp;
+                Log.d("Nmea Monitor", "reportMovement: Started moving again");
+            }
+            m_lastMoveTimestamp = event.timestamp;
+        }
+
+        m_lastMoveX = event.values[0];
+        m_lastMoveY = event.values[1];
+        m_lastMoveZ = event.values[2];
     }
 
     private static double distance(GpggaMeasurement a, GpggaMeasurement b) {

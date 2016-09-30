@@ -3,6 +3,10 @@ package dk.au.cs.pervasivepositioninggps;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -13,11 +17,14 @@ import android.widget.*;
 
 import java.security.AccessControlException;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
     boolean m_Started = false;
 
     LocationManager m_LocMan;
     NmeaMonitor m_Monitor;
+
+    private SensorManager m_SensorManager;
+    private Sensor m_Accelerometer;
 
     RadioGroup m_RadioGroup;
     EditText m_ValueField1;
@@ -28,8 +35,7 @@ public class MainActivity extends AppCompatActivity {
     TextView m_MesaurementCountLabel;
     TextView m_ReadingsCountLabel;
 
-    public void onStartBtnClicked(View view)
-    {
+    public void onStartBtnClicked(View view) {
         int value1 = -1;
         try {
             value1 = Integer.parseInt(m_ValueField1.getText().toString());
@@ -68,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Please enter a valid value", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                m_SensorManager.registerListener(this, m_Accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
                 m_Monitor.getMovementFix(value1, value2);
                 break;
             default:
@@ -78,8 +85,7 @@ public class MainActivity extends AppCompatActivity {
         setWidgetEnables(false);
     }
 
-    public void onSaveBtnClicked(View view)
-    {
+    public void onSaveBtnClicked(View view) {
         // Write file
 
         // If successful run the following, otherwise; return before this.
@@ -89,16 +95,15 @@ public class MainActivity extends AppCompatActivity {
         m_MesaurementCountLabel.setText("Measurements: " + m_Monitor.measurements.size());
     }
 
-    public void onTestClicked(View view)
-    {
+    public void onTestClicked(View view) {
         m_Monitor.getSingleFix();
         setWidgetEnables(false);
     }
 
-    public void onStopBtnClicked(View view)
-    {
+    public void onStopBtnClicked(View view) {
         m_Monitor.stop();
         setWidgetEnables(true);
+        m_SensorManager.unregisterListener(this);
     }
 
     private void setWidgetEnables(boolean enabled) {
@@ -113,8 +118,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setEnableRadioButtons(boolean enable)
-    {
+    private void setEnableRadioButtons(boolean enable) {
         for(int i = 0; i < m_RadioGroup.getChildCount(); i++){
             m_RadioGroup.getChildAt(i).setEnabled(enable);
         }
@@ -141,6 +145,8 @@ public class MainActivity extends AppCompatActivity {
         m_MesaurementCountLabel = (TextView)findViewById(R.id.labelMeasurementCount);
         m_ReadingsCountLabel = (TextView)findViewById(R.id.labelReadingsCount);
 
+        m_SensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        m_Accelerometer = m_SensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         m_Monitor = new NmeaMonitor(m_LocMan, getApplicationContext(), m_StatusIcon, m_MesaurementCountLabel, m_ReadingsCountLabel);
 
         m_RadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
@@ -176,5 +182,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        Log.i("Test", sensor + " - " + accuracy);
+    }
+
+    public void onSensorChanged(SensorEvent event) {
+        m_Monitor.reportMovement(event);
     }
 }
