@@ -29,7 +29,7 @@ public class NmeaMonitor implements NmeaListener {
 
     private final int kFoundColor = 0xAA00FF00;
     private final int kSearchingColor = 0xAAFFFF00;
-    private final int kMpsDistance = 50;
+    private final double kMpsDistance = 50;
 
     public ArrayList<GpggaMeasurement> measurements = new ArrayList<GpggaMeasurement>();
     private int m_ReadingsCount = 0;
@@ -42,7 +42,7 @@ public class NmeaMonitor implements NmeaListener {
     private PendingIntent m_Intent;
 
     private double m_DisatnceThreshold = 0;
-    private double m_SpeedThreshold = 0;
+    private double m_TimeThreshold = 0;
 
     public NmeaMonitor(LocationManager locman, Context appContext, ImageView statusIcon, TextView countLabel, TextView readingscountLabel) {
         this.m_LocMan = locman;
@@ -67,7 +67,7 @@ public class NmeaMonitor implements NmeaListener {
         m_LocMan.requestSingleUpdate(LocationManager.GPS_PROVIDER, m_Intent);
         m_Mode = Mode.SINGLE;
         m_DisatnceThreshold = 0;
-        m_SpeedThreshold = 0;
+        m_TimeThreshold  = 0;
         measurements.clear();
     }
 
@@ -80,7 +80,7 @@ public class NmeaMonitor implements NmeaListener {
         m_LocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, time * 1000, 0, m_Intent);
         m_Mode = Mode.TIME;
         m_DisatnceThreshold = 0;
-        m_SpeedThreshold = 0;
+        m_TimeThreshold = time;
         measurements.clear();
     }
 
@@ -93,7 +93,7 @@ public class NmeaMonitor implements NmeaListener {
         m_LocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 0, m_Intent);
         m_Mode = Mode.DISTANCE;
         m_DisatnceThreshold = meters;
-        m_SpeedThreshold = 0;
+        m_TimeThreshold = 0;
         measurements.clear();
     }
 
@@ -103,11 +103,13 @@ public class NmeaMonitor implements NmeaListener {
             return;
         }
         m_LocMan.addNmeaListener(this);
-        int pseudoTimeInterval = (kMpsDistance * 1000) / (meterspersec * 1000);
-        m_LocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, pseudoTimeInterval, 0, m_Intent);
+        m_LocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 0, m_Intent);
         m_Mode = Mode.MAXSPEED;
         m_DisatnceThreshold = kMpsDistance;
-        m_SpeedThreshold = meterspersec;
+        m_TimeThreshold = (kMpsDistance * 1000) / (meterspersec * 1000);
+
+        Log.i("Test", "" + m_TimeThreshold);
+
         measurements.clear();
     }
 
@@ -117,11 +119,10 @@ public class NmeaMonitor implements NmeaListener {
             return;
         }
         m_LocMan.addNmeaListener(this);
-        int pseudoTimeInterval = (kMpsDistance * 1000) / (meterspersec * 1000);
-        m_LocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, pseudoTimeInterval, 0, m_Intent);
+        m_LocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 0, m_Intent);
         m_Mode = Mode.MOVEMENT;
         m_DisatnceThreshold = kMpsDistance;
-        m_SpeedThreshold = meterspersec;
+        m_TimeThreshold = kMpsDistance / meterspersec;
         measurements.clear();
     }
 
@@ -151,52 +152,59 @@ public class NmeaMonitor implements NmeaListener {
 
         GpggaMeasurement fix = GpggaMeasurement.parseString(nmea);
 
-        if (fix.isValid()) {
-
-            GpggaMeasurement previous = measurements.get(measurements.size() - 1);
-
-            switch (m_Mode){
-                case SINGLE:
-                case TIME:
-                    measurements.add(fix);
-                    break;
-                case DISTANCE:
-                    if (previous == null) {
-                        measurements.add(fix);
-                        m_StatusIcon.setColorFilter(kFoundColor);
-                        return;
-                    }
-
-                    if (distance(previous, fix) < m_DisatnceThreshold) {
-                        measurements.add(fix);
-                        m_StatusIcon.setColorFilter(kFoundColor);
-                    }
-                    break;
-                case MAXSPEED:
-                    if (previous == null) {
-                        measurements.add(fix);
-                        m_StatusIcon.setColorFilter(kFoundColor);
-                        return;
-                    }
-
-                    if (distance(previous, fix) < m_DisatnceThreshold) {
-                        measurements.add(fix);
-                        m_StatusIcon.setColorFilter(kFoundColor);
-                    }
-                case MOVEMENT:
-                    break;
-            }
-
-            m_MeasurementCountLabel.setText("Measurements (as of " + currentTime  + "): " + measurements.size());
-//            Toast.makeText(m_AppContext, "Found fix. " + fix.toString(), Toast.LENGTH_SHORT).show();
-            Log.i("Nmea Monitor", fix.toString());
-        } else {
+        if (!fix.isValid()) {
             m_StatusIcon.setColorFilter(kSearchingColor);
-            //Log.v("Localization", "Package received" + fix.toString());
+            return;
         }
+
+        if (measurements.size() == 0) {
+            // we don't have anything to compare to yet, so we can early out.
+            addFix(currentTime, fix);
+            return;
+        }
+        GpggaMeasurement previous = measurements.get(measurements.size() - 1);
+        
+        switch (m_Mode){
+            case SINGLE:
+            case TIME:
+                measurements.add(fix);
+                break;
+            case DISTANCE:
+                if (distance(previous, fix) < m_DisatnceThreshold) {
+                    addFix(currentTime, fix);
+                }
+                break;
+            case MAXSPEED:
+                if (timeDifference(previous, fix) >= m_TimeThreshold) {
+                    addFix(currentTime, fix);
+                }
+
+                if (distance(previous, fix) < m_DisatnceThreshold) {
+                    addFix(currentTime, fix);
+                }
+            case MOVEMENT:
+                break;
+        }
+
+        Log.i("Nmea Monitor", fix.toString());
     }
 
-    private double distance(GpggaMeasurement a, GpggaMeasurement b) {
+    private void addFix(String currentTime, GpggaMeasurement fix) {
+        measurements.add(fix);
+        m_MeasurementCountLabel.setText("Measurements (as of " + currentTime  + "): " + measurements.size());
+        m_StatusIcon.setColorFilter(kFoundColor);
+    }
+
+    private static double distance(GpggaMeasurement a, GpggaMeasurement b) {
         return Double.MAX_VALUE;
+    }
+
+    private static int timeDifference(GpggaMeasurement a, GpggaMeasurement b) {
+        int timeDiff = (a.hours - b.hours)*3600+(a.minutes - b.minutes)*60+(a.seconds - b.seconds);
+        if (timeDiff < 0) {
+            timeDiff *= -1;
+        }
+
+        return timeDiff;
     }
 }

@@ -13,7 +13,9 @@ public class GpggaMeasurement {
 
     public double latitude;
     public double longitude;
-    public String time;
+    public int hours = -1;
+    public int minutes = -1;
+    public int seconds = -1;
     public int statusCode;
 
     public static GpggaMeasurement parseString(String nmea)
@@ -23,10 +25,15 @@ public class GpggaMeasurement {
 
         try
         {
+            String time = array[1];
+            newGpgga.hours = Integer.parseInt(time.substring(0,2));
+            newGpgga.minutes = Integer.parseInt(time.substring(2,4));
+            newGpgga.seconds = Integer.parseInt(time.substring(4,6));
+
             newGpgga.latitude = Double.parseDouble(array[2]);
             newGpgga.longitude = Double.parseDouble(array[4]);
             newGpgga.statusCode = Integer.parseInt(array[6]);
-            newGpgga.time = array[1];
+
         }
         catch (Exception ex)
         {
@@ -47,11 +54,11 @@ public class GpggaMeasurement {
         sb.append("<Placemark><TimeStamp><when>");
         sb.append(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
         sb.append("T");
-        sb.append(time.substring(0,2));
+        sb.append(hours);
         sb.append(":");
-        sb.append(time.substring(2,4));
+        sb.append(minutes);
         sb.append(":");
-        sb.append(time.substring(4,6));
+        sb.append(seconds);
         sb.append("Z</when></TimeStamp><Point><coordinates>");
         sb.append(longitude);
         sb.append(",");
@@ -62,6 +69,6 @@ public class GpggaMeasurement {
 
     @Override
     public String toString() {
-        return this.statusCode + " - " + time;
+        return this.statusCode + " - " + hours + ":" + minutes + ":" + seconds;
     }
 }
