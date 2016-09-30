@@ -111,7 +111,16 @@
             android:layout_height="wrap_content"
             android:inputType="number"
             android:ems="10"
-            android:id="@+id/inputField" />
+            android:id="@+id/inputField1"
+            android:hint="Param 1" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/inputField2"
+            android:hint="Param 2" />
 
         <Button
             android:text="Start"

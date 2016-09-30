@@ -20,7 +20,8 @@ public class MainActivity extends AppCompatActivity {
     NmeaMonitor m_Monitor;
 
     RadioGroup m_RadioGroup;
-    EditText m_ValueField;
+    EditText m_ValueField1;
+    EditText m_ValueField2;
     Button m_StartButton;
     Button m_FirstFixButton;
     ImageView m_StatusIcon;
@@ -29,14 +30,18 @@ public class MainActivity extends AppCompatActivity {
 
     public void onStartBtnClicked(View view)
     {
-        int value = 0;
-        try
-        {
-            value = Integer.parseInt(m_ValueField.getText().toString());
-        }
-        catch (Exception ex)
-        {
-            Log.e("Parsing", m_ValueField.getText().toString() + ": " + ex.toString(), ex);
+        int value1 = -1;
+        try {
+            value1 = Integer.parseInt(m_ValueField1.getText().toString());
+        } catch (Exception ex) { }
+
+        int value2 = -1;
+        try {
+            value2 = Integer.parseInt(m_ValueField2.getText().toString());
+        } catch (Exception ex) { }
+
+        if (value1 == -1) {
+            Log.e("Parsing", "Invalid input " + m_ValueField1.getText().toString());
             Toast.makeText(getApplicationContext(), "Please enter a valid value", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -44,16 +49,26 @@ public class MainActivity extends AppCompatActivity {
         switch (m_RadioGroup.getCheckedRadioButtonId())
         {
             case R.id.triggerTime:
-                m_Monitor.getTimeFix(value);
+                m_Monitor.getTimeFix(value1);
                 break;
             case R.id.triggerDistance:
-                m_Monitor.getDistanceFix(value);
+                m_Monitor.getDistanceFix(value1);
                 break;
             case R.id.triggerMaxSpeed:
-                m_Monitor.getMaxSpeedFix(value);
+                if (value2 == -1) {
+                    Log.e("Parsing", "Invalid input " + m_ValueField2.getText().toString());
+                    Toast.makeText(getApplicationContext(), "Please enter a valid value", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                m_Monitor.getMaxSpeedFix(value1, value2);
                 break;
             case R.id.triggerMovement:
-                m_Monitor.getMovementFix(value);
+                if (value2 == -1) {
+                    Log.e("Parsing", "Invalid input " + m_ValueField2.getText().toString());
+                    Toast.makeText(getApplicationContext(), "Please enter a valid value", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                m_Monitor.getMovementFix(value1, value2);
                 break;
             default:
                 Toast.makeText(getApplicationContext(), "Error: No trigger type was selected", Toast.LENGTH_SHORT).show();
@@ -90,9 +105,12 @@ public class MainActivity extends AppCompatActivity {
         m_Started = !enabled;
         m_StartButton.setEnabled(enabled);
         setEnableRadioButtons(enabled);
-        m_ValueField.setEnabled(enabled);
+        m_ValueField1.setEnabled(enabled);
+        m_ValueField2.setEnabled(enabled);
         m_FirstFixButton.setEnabled(enabled);
-        m_RadioGroup.clearCheck();
+        if (enabled) {
+            m_RadioGroup.clearCheck();
+        }
     }
 
     private void setEnableRadioButtons(boolean enable)
@@ -115,7 +133,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         m_RadioGroup = (RadioGroup)findViewById(R.id.radioGroup);
-        m_ValueField = (EditText) findViewById(R.id.inputField);
+        m_ValueField1 = (EditText) findViewById(R.id.inputField1);
+        m_ValueField2 = (EditText) findViewById(R.id.inputField2);
         m_StartButton = (Button) findViewById(R.id.buttonStart);
         m_FirstFixButton = (Button) findViewById(R.id.buttonTest);
         m_StatusIcon = (ImageView) findViewById(R.id.statusIcon);
@@ -123,5 +142,39 @@ public class MainActivity extends AppCompatActivity {
         m_ReadingsCountLabel = (TextView)findViewById(R.id.labelReadingsCount);
 
         m_Monitor = new NmeaMonitor(m_LocMan, getApplicationContext(), m_StatusIcon, m_MesaurementCountLabel, m_ReadingsCountLabel);
+
+        m_RadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId)
+                {
+                    case R.id.triggerTime:
+                        m_ValueField1.setHint("Time in seconds");
+                        m_ValueField2.setHint(" - ");
+                        m_ValueField1.setEnabled(true);
+                        m_ValueField2.setEnabled(false);
+                        break;
+                    case R.id.triggerDistance:
+                        m_ValueField1.setHint("Distance in meters");
+                        m_ValueField2.setHint(" - ");
+                        m_ValueField1.setEnabled(true);
+                        m_ValueField2.setEnabled(false);
+                        break;
+                    case R.id.triggerMaxSpeed:
+                        m_ValueField1.setHint("Speed in meters per second");
+                        m_ValueField2.setHint("Distance in meters");
+                        m_ValueField1.setEnabled(true);
+                        m_ValueField2.setEnabled(true);
+                        break;
+                    case R.id.triggerMovement:
+                        m_ValueField1.setHint("Speed in meters per second");
+                        m_ValueField2.setHint("Distance in meters");
+                        m_ValueField1.setEnabled(true);
+                        m_ValueField2.setEnabled(true);
+                        break;
+                }
+            }
+        });
     }
 }

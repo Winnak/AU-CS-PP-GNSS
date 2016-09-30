@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.GnssMeasurement;
 import android.location.GpsStatus.NmeaListener;
 import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
@@ -29,7 +28,6 @@ public class NmeaMonitor implements NmeaListener {
 
     private final int kFoundColor = 0xAA00FF00;
     private final int kSearchingColor = 0xAAFFFF00;
-    private final double kMpsDistance = 50;
 
     public ArrayList<GpggaMeasurement> measurements = new ArrayList<GpggaMeasurement>();
     private int m_ReadingsCount = 0;
@@ -41,7 +39,7 @@ public class NmeaMonitor implements NmeaListener {
     private TextView m_ReadingsCountLabel;
     private PendingIntent m_Intent;
 
-    private double m_DisatnceThreshold = 0;
+    private double m_DistanceThreshold = 0;
     private double m_TimeThreshold = 0;
 
     public NmeaMonitor(LocationManager locman, Context appContext, ImageView statusIcon, TextView countLabel, TextView readingscountLabel) {
@@ -66,63 +64,46 @@ public class NmeaMonitor implements NmeaListener {
         m_LocMan.addNmeaListener(this);
         m_LocMan.requestSingleUpdate(LocationManager.GPS_PROVIDER, m_Intent);
         m_Mode = Mode.SINGLE;
-        m_DisatnceThreshold = 0;
+        m_DistanceThreshold = 0;
         m_TimeThreshold  = 0;
         measurements.clear();
     }
 
     public void getTimeFix(int time) {
-        if (ActivityCompat.checkSelfPermission(m_AppContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(m_AppContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.e("NMEA Monitor", "Could not find shit");
-            return;
-        }
-        m_LocMan.addNmeaListener(this);
-        m_LocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, time * 1000, 0, m_Intent);
         m_Mode = Mode.TIME;
-        m_DisatnceThreshold = 0;
+        m_DistanceThreshold = 0;
         m_TimeThreshold = time;
-        measurements.clear();
+        startListening();
     }
 
     public void getDistanceFix(int meters) {
-        if (ActivityCompat.checkSelfPermission(m_AppContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(m_AppContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.e("NMEA Monitor", "Could not find shit");
-            return;
-        }
-        m_LocMan.addNmeaListener(this);
-        m_LocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 0, m_Intent);
         m_Mode = Mode.DISTANCE;
-        m_DisatnceThreshold = meters;
+        m_DistanceThreshold = meters;
         m_TimeThreshold = 0;
-        measurements.clear();
+        startListening();
     }
 
-    public void getMaxSpeedFix(int meterspersec) {
-        if (ActivityCompat.checkSelfPermission(m_AppContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(m_AppContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.e("NMEA Monitor", "Could not find shit");
-            return;
-        }
-        m_LocMan.addNmeaListener(this);
-        m_LocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 0, m_Intent);
+    public void getMaxSpeedFix(int meterspersec, int meters) {
         m_Mode = Mode.MAXSPEED;
-        m_DisatnceThreshold = kMpsDistance;
-        m_TimeThreshold = (kMpsDistance * 1000) / (meterspersec * 1000);
-
-        Log.i("Test", "" + m_TimeThreshold);
-
-        measurements.clear();
+        m_DistanceThreshold = meters;
+        m_TimeThreshold =  meters / meterspersec;
+        startListening();
     }
 
-    public void getMovementFix(int meterspersec) {
+    public void getMovementFix(int meterspersec, int meters) {
+        m_Mode = Mode.MOVEMENT;
+        m_DistanceThreshold = meters;
+        m_TimeThreshold = meters / meterspersec;
+        startListening();
+    }
+
+    private void startListening() {
         if (ActivityCompat.checkSelfPermission(m_AppContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(m_AppContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.e("NMEA Monitor", "Could not find shit");
             return;
         }
         m_LocMan.addNmeaListener(this);
-        m_LocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 0, m_Intent);
-        m_Mode = Mode.MOVEMENT;
-        m_DisatnceThreshold = kMpsDistance;
-        m_TimeThreshold = kMpsDistance / meterspersec;
+        m_LocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 0, m_Intent);
         measurements.clear();
     }
 
@@ -163,14 +144,16 @@ public class NmeaMonitor implements NmeaListener {
             return;
         }
         GpggaMeasurement previous = measurements.get(measurements.size() - 1);
-        
+
         switch (m_Mode){
             case SINGLE:
             case TIME:
-                measurements.add(fix);
+                if (timeDifference(previous, fix) >= m_TimeThreshold) {
+                    addFix(currentTime, fix);
+                }
                 break;
             case DISTANCE:
-                if (distance(previous, fix) < m_DisatnceThreshold) {
+                if (distance(previous, fix) < m_DistanceThreshold) {
                     addFix(currentTime, fix);
                 }
                 break;
@@ -179,10 +162,14 @@ public class NmeaMonitor implements NmeaListener {
                     addFix(currentTime, fix);
                 }
 
-                if (distance(previous, fix) < m_DisatnceThreshold) {
+                if (distance(previous, fix) < m_DistanceThreshold) {
                     addFix(currentTime, fix);
                 }
             case MOVEMENT:
+
+                if (distance(previous, fix) < m_DistanceThreshold) {
+                    addFix(currentTime, fix);
+                }
                 break;
         }
 
@@ -196,6 +183,7 @@ public class NmeaMonitor implements NmeaListener {
     }
 
     private static double distance(GpggaMeasurement a, GpggaMeasurement b) {
+        // TODO: functionality here.
         return Double.MAX_VALUE;
     }
 
