@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
+import java.io.*;
 
 import java.security.AccessControlException;
 
@@ -87,12 +88,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void onSaveBtnClicked(View view) {
         // Write file
-
+        StringBuilder sb = new StringBuilder();
+        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        sb.append("<kml xmlns=\"http://www.opengis.net/kml/2.2\">");
+        for (int i = 0; i < m_Monitor.measurements.size(); i++)
+        {
+            sb.append(m_Monitor.measurements.get(i));
+        }
+        sb.append("</kml>");
+        if (!writeToFile("myData", sb.toString()))
+        {
+            return;
+        }
         // If successful run the following, otherwise; return before this.
         Toast.makeText(getApplicationContext(), "File saved", Toast.LENGTH_SHORT).show();
         setWidgetEnables(true);
         m_Monitor.measurements.clear();
         m_MesaurementCountLabel.setText("Measurements: " + m_Monitor.measurements.size());
+    }
+
+    private boolean writeToFile(String filename, String string){//String data,Context context) {
+//        try {
+//            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("config.txt", Context.MODE_PRIVATE));
+//            outputStreamWriter.write(data);
+//            outputStreamWriter.close();
+//        }
+//        catch (IOException e) {
+//            Log.e("Exception", "File write failed: " + e.toString());
+//        }
+        try {
+            FileOutputStream outputStream = openFileOutput(filename, MODE_APPEND);
+            outputStream.write(string.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     public void onTestClicked(View view) {
