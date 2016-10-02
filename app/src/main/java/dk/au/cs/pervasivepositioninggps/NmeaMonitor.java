@@ -50,6 +50,7 @@ public class NmeaMonitor implements NmeaListener {
     private float m_lastMoveZ = 0;
     private long m_lastMoveStartTimestamp = 0;
     private long m_lastMoveTimestamp = 0;
+    private float m_MovementTime = 0;
 
     private double m_TimeThreshold = 0;
     public NmeaMonitor(LocationManager locman, Context appContext, ImageView statusIcon, TextView countLabel, TextView readingscountLabel) {
@@ -180,6 +181,11 @@ public class NmeaMonitor implements NmeaListener {
                     break;
                 }
             case MOVEMENT:
+                if (m_MovementTime >= m_TimeThreshold) {
+                    addFix(currentTime, fix);
+                    m_MovementTime = 0;
+                    break;
+                }
 
                 if (distance(previous, fix) < m_DistanceThreshold) {
                     addFix(currentTime, fix);
@@ -204,9 +210,9 @@ public class NmeaMonitor implements NmeaListener {
 
         if (diffMovement > kMovementThreshold) {
             if (event.timestamp - m_lastMoveTimestamp > kMovementTimeThreshold) {
-                float moveTime = m_lastMoveStartTimestamp - m_lastMoveTimestamp;
+                // Started moving after a break.
+                m_MovementTime += m_lastMoveStartTimestamp - m_lastMoveTimestamp;
                 m_lastMoveStartTimestamp = event.timestamp;
-                Log.d("Nmea Monitor", "reportMovement: Started moving again");
             }
             m_lastMoveTimestamp = event.timestamp;
         }
