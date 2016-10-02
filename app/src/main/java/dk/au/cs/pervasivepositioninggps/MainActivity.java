@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.*;
 
+import java.io.FileOutputStream;
 import java.security.AccessControlException;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -87,7 +88,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void onSaveBtnClicked(View view) {
         // Write file
-
+        if (!writeToFile("Measurement.kml", ""))
+        {
+            return;
+        }
         // If successful run the following, otherwise; return before this.
         Toast.makeText(getApplicationContext(), "File saved", Toast.LENGTH_SHORT).show();
         setWidgetEnables(true);
@@ -95,7 +99,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         m_MesaurementCountLabel.setText("Measurements: " + m_Monitor.measurements.size());
     }
 
-    public void onTestClicked(View view) {
+    private boolean writeToFile(String filename, String string){
+        FileOutputStream outputStream;
+        try {
+            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(string.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public void onTestClicked(View view)
+    {
         m_Monitor.getSingleFix();
         setWidgetEnables(false);
     }
