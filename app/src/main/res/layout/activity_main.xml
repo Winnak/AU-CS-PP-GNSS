@@ -11,10 +11,13 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="dk.au.cs.pervasivepositioninggps.MainActivity">
 
+    <ScrollView android:layout_width="match_parent"
+        android:layout_height="match_parent">
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:scrollbars="vertical">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -111,7 +114,16 @@
             android:layout_height="wrap_content"
             android:inputType="number"
             android:ems="10"
-            android:id="@+id/inputField" />
+            android:id="@+id/inputField1"
+            android:hint="Param 1" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/inputField2"
+            android:hint="Param 2" />
 
         <Button
             android:text="Start"
@@ -146,5 +158,5 @@
             android:onClick="onSaveBtnClicked" />
 
     </LinearLayout>
-
+    </ScrollView>
 </RelativeLayout>

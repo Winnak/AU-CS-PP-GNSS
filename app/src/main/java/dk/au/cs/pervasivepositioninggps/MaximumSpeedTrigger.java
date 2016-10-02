@@ -12,9 +12,9 @@ public class MaximumSpeedTrigger extends Trigger {
     {
         m_TriggerSpeed = speed;
     }
-
     @Override
     public boolean isTriggered(GpggaMeasurement newMeasurement) {
+/*
         GpggaMeasurement previousMeasurement = nm.measurements.get(nm.measurements.size()-1);
 
         double startTime = Double.parseDouble(previousMeasurement.time);
@@ -34,6 +34,7 @@ public class MaximumSpeedTrigger extends Trigger {
             savedPositions.add(newMeasurement);
             return true;
         }
+    */
         return false;
     }
 }

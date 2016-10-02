@@ -15,6 +15,7 @@ public class TimeTrigger extends Trigger {
 
     @Override
     public boolean isTriggered(GpggaMeasurement gm) {
+        /*
         GpggaMeasurement previousMeasurement = nm.measurements.get(nm.measurements.size()-1);
         double startTime = Double.parseDouble(previousMeasurement.time);
         double endTime = Double.parseDouble(gm.time);
@@ -23,6 +24,7 @@ public class TimeTrigger extends Trigger {
             savedPositions.add(gm);
             return true;
         }
+        */
         return false;
     }
 }
