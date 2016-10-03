@@ -8,13 +8,16 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
+import android.media.MediaScannerConnection;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
 import java.io.*;
+
 
 import java.security.AccessControlException;
 
@@ -96,10 +99,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             sb.append(m_Monitor.measurements.get(i));
         }
         sb.append("</kml>");
-        if (!writeToFile("myData", sb.toString()))
+        String gh = getExternalCacheDir().getAbsolutePath();//.substring(0, getExternalCacheDir().getAbsolutePath().length()-5);
+        File path=new File(gh,"CollectedData");
+        path.mkdir();
+        File mypath=new File(path,"myfile.txt");
+        if (!writeToFile(mypath, sb.toString()))
         {
             return;
         }
+        Toast.makeText(getApplicationContext(), mypath.getAbsolutePath().toString(), Toast.LENGTH_SHORT).show();
         // If successful run the following, otherwise; return before this.
         Toast.makeText(getApplicationContext(), "File saved", Toast.LENGTH_SHORT).show();
         setWidgetEnables(true);
@@ -107,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         m_MesaurementCountLabel.setText("Measurements: " + m_Monitor.measurements.size());
     }
 
-    private boolean writeToFile(String filename, String string){//String data,Context context) {
+    private boolean writeToFile(File filename, String string){//String data,Context context) {
 //        try {
 //            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("config.txt", Context.MODE_PRIVATE));
 //            outputStreamWriter.write(data);
@@ -116,10 +124,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        catch (IOException e) {
 //            Log.e("Exception", "File write failed: " + e.toString());
 //        }
+
         try {
-            FileOutputStream outputStream = openFileOutput(filename, MODE_APPEND);
-            outputStream.write(string.getBytes());
-            outputStream.close();
+            BufferedWriter bfW = new BufferedWriter(new FileWriter(filename));
+            bfW.write(string);
+            //bfW.flush();
+            bfW.close();
+            //FileOutputStream outputStream = openFileOutput(filename.getAbsolutePath(), MODE_APPEND);
+            //outputStream.write(string.getBytes());
+            //outputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
