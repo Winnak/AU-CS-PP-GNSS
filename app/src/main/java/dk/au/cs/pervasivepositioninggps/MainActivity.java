@@ -14,9 +14,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
+import java.io.*;
 
-import java.io.FileOutputStream;
+
 import java.security.AccessControlException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     boolean m_Started = false;
@@ -88,10 +91,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void onSaveBtnClicked(View view) {
         // Write file
-        if (!writeToFile("Measurement.kml", ""))
+        StringBuilder sb = new StringBuilder();
+        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        sb.append("<kml xmlns=\"http://www.opengis.net/kml/2.2\">");
+        for (int i = 0; i < m_Monitor.measurements.size(); i++)
+        {
+            sb.append(m_Monitor.measurements.get(i));
+        }
+        sb.append("</kml>");
+        String gh = getExternalCacheDir().getAbsolutePath();
+        File path=new File(gh,"CollectedData");
+        path.mkdir();
+        String fileName = "Measurement-" + new SimpleDateFormat("hh-mm-ss").format(new Date()).toString() + ".kml";
+        File mypath=new File(path, fileName);
+        if (!writeToFile(mypath, sb.toString()))
         {
             return;
         }
+        Toast.makeText(getApplicationContext(), mypath.getAbsolutePath().toString(), Toast.LENGTH_SHORT).show();
         // If successful run the following, otherwise; return before this.
         Toast.makeText(getApplicationContext(), "File saved", Toast.LENGTH_SHORT).show();
         setWidgetEnables(true);
@@ -99,12 +116,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         m_MesaurementCountLabel.setText("Measurements: " + m_Monitor.measurements.size());
     }
 
-    private boolean writeToFile(String filename, String string){
-        FileOutputStream outputStream;
+    private boolean writeToFile(File filename, String string){
+
         try {
-            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-            outputStream.write(string.getBytes());
-            outputStream.close();
+            BufferedWriter bfW = new BufferedWriter(new FileWriter(filename));
+            bfW.write(string);
+            bfW.close();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -112,8 +129,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return true;
     }
 
-    public void onTestClicked(View view)
-    {
+    public void onTestClicked(View view) {
         m_Monitor.getSingleFix();
         setWidgetEnables(false);
     }
