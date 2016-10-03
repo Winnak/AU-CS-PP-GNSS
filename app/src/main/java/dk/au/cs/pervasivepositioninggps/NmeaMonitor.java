@@ -223,8 +223,19 @@ public class NmeaMonitor implements NmeaListener {
     }
 
     private static double distance(GpggaMeasurement a, GpggaMeasurement b) {
-        // TODO: functionality here.
-        return Double.MAX_VALUE;
+        final int worldRadius = 63674447; // Radius of earth in meters
+        final double bLatRadians = Math.toRadians(b.latitude);
+        final double aLatRadians = Math.toRadians(a.latitude);
+
+        final double deltaLat = bLatRadians - aLatRadians;
+        final double deltaLon = Math.toRadians(b.longitude) - Math.toRadians(a.longitude);
+
+        final double haversinePartA = Math.sin(deltaLat * 0.5) * Math.sin(deltaLat * 0.5) +
+                                      Math.sin(deltaLon * 0.5) * Math.sin(deltaLon * 0.5) *
+                                      Math.cos(aLatRadians)    * Math.cos(bLatRadians);
+        final double haversinePartB = 2 * Math.atan2(Math.sqrt(haversinePartA), Math.sqrt(1 - haversinePartA));
+
+        return worldRadius * haversinePartB;
     }
 
     private static int timeDifference(GpggaMeasurement a, GpggaMeasurement b) {
