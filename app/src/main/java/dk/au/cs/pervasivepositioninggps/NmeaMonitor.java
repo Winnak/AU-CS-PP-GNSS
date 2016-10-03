@@ -48,8 +48,8 @@ public class NmeaMonitor implements NmeaListener {
     private float m_lastMoveX = 0;
     private float m_lastMoveY = 0;
     private float m_lastMoveZ = 0;
-    private long m_lastMoveStartTimestamp = 0;
-    private long m_lastMoveTimestamp = 0;
+//    private long m_lastMoveStartTimestamp = 0;
+//    private long m_lastMoveTimestamp = 0;
     private float m_MovementTime = 0;
 
     private double m_TimeThreshold = 0;
@@ -209,12 +209,16 @@ public class NmeaMonitor implements NmeaListener {
                 + (m_lastMoveZ * m_lastMoveZ) - (event.values[2] * event.values[2]);
 
         if (diffMovement > kMovementThreshold) {
-            if (event.timestamp - m_lastMoveTimestamp > kMovementTimeThreshold) {
-                // Started moving after a break.
-                m_MovementTime += m_lastMoveStartTimestamp - m_lastMoveTimestamp;
-                m_lastMoveStartTimestamp = event.timestamp;
-            }
-            m_lastMoveTimestamp = event.timestamp;
+//            if (event.timestamp - m_lastMoveTimestamp > kMovementTimeThreshold) {
+//                // Started moving after a break.
+//                m_MovementTime += m_lastMoveStartTimestamp - m_lastMoveTimestamp;
+//                m_lastMoveStartTimestamp = event.timestamp;
+//            }
+//            m_lastMoveTimestamp = event.timestamp;
+
+            //Note time needs to be divided by: 1 000 000 (seconds <-> microseconds)
+
+            m_MovementTime += 0.2f; // default sampling rate of accelerometer.
         }
 
         m_lastMoveX = event.values[0];
