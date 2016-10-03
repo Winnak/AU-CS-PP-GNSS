@@ -30,8 +30,16 @@ public class GpggaMeasurement {
             newGpgga.minutes = Integer.parseInt(time.substring(2,4));
             newGpgga.seconds = Integer.parseInt(time.substring(4,6));
 
-            newGpgga.latitude = Double.parseDouble(array[2]);
-            newGpgga.longitude = Double.parseDouble(array[4]);
+            // Muligvis en faktor 10 fejl
+            int latDeg = Integer.parseInt(array[2].substring(0, 2));
+            double latMin = Double.parseDouble(array[2].substring(2, array[2].length()));
+            newGpgga.latitude = latDeg + latMin / 60.0;
+
+            // Muligvis en faktor 10 fejl
+            int longDeg = Integer.parseInt(array[4].substring(0, 2));
+            double longMin = Double.parseDouble(array[4].substring(2, array[4].length()));
+            newGpgga.longitude = longDeg + longMin / 60.0;
+
             newGpgga.statusCode = Integer.parseInt(array[6]);
 
         }

@@ -92,12 +92,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSaveBtnClicked(View view) {
         // Write file
         StringBuilder sb = new StringBuilder();
-        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        sb.append("<kml xmlns=\"http://www.opengis.net/kml/2.2\">");
+        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        sb.append("<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n");
+        sb.append("<Placemark><TimeStamp><when>");
+        sb.append(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        sb.append("T");
+        sb.append(m_Monitor.measurements.get(0));
+        sb.append(":");
+        sb.append(m_Monitor.measurements.get(0));
+        sb.append(":");
+        sb.append(m_Monitor.measurements.get(0));
+        sb.append("Z</when></TimeStamp><Point>");
+        sb.append("<coordinates>\n");
         for (int i = 0; i < m_Monitor.measurements.size(); i++)
         {
-            sb.append(m_Monitor.measurements.get(i));
+            sb.append('\t');
+            sb.append(m_Monitor.measurements.get(i).latitude);
+            sb.append(',');
+            sb.append(m_Monitor.measurements.get(i).longitude);
+            sb.append('\n');
         }
+        sb.append("</coordinates>\n</Point></Placemark>\n");
         sb.append("</kml>");
         String gh = getExternalCacheDir().getAbsolutePath();
         File path=new File(gh,"CollectedData");

@@ -165,7 +165,7 @@ public class NmeaMonitor implements NmeaListener {
                 }
                 break;
             case DISTANCE:
-                if (distance(previous, fix) < m_DistanceThreshold) {
+                if (distance(previous, fix) > m_DistanceThreshold) {
                     addFix(currentTime, fix);
                     break;
                 }
@@ -176,7 +176,7 @@ public class NmeaMonitor implements NmeaListener {
                     break;
                 }
 
-                if (distance(previous, fix) < m_DistanceThreshold) {
+                if (distance(previous, fix) > m_DistanceThreshold) {
                     addFix(currentTime, fix);
                     break;
                 }
@@ -187,7 +187,7 @@ public class NmeaMonitor implements NmeaListener {
                     break;
                 }
 
-                if (distance(previous, fix) < m_DistanceThreshold) {
+                if (distance(previous, fix) > m_DistanceThreshold) {
                     addFix(currentTime, fix);
                     break;
                 }
@@ -209,15 +209,7 @@ public class NmeaMonitor implements NmeaListener {
                 + (m_lastMoveZ * m_lastMoveZ) - (event.values[2] * event.values[2]);
 
         if (diffMovement > kMovementThreshold) {
-//            if (event.timestamp - m_lastMoveTimestamp > kMovementTimeThreshold) {
-//                // Started moving after a break.
-//                m_MovementTime += m_lastMoveStartTimestamp - m_lastMoveTimestamp;
-//                m_lastMoveStartTimestamp = event.timestamp;
-//            }
-//            m_lastMoveTimestamp = event.timestamp;
-
             //Note time needs to be divided by: 1 000 000 (seconds <-> microseconds)
-
             m_MovementTime += 0.2f; // default sampling rate of accelerometer.
         }
 
@@ -226,18 +218,18 @@ public class NmeaMonitor implements NmeaListener {
         m_lastMoveZ = event.values[2];
     }
 
-    private static double distance(GpggaMeasurement a, GpggaMeasurement b) {
-        final int worldRadius = 63674447; // Radius of earth in meters
-        final double bLatRadians = Math.toRadians(b.latitude);
-        final double aLatRadians = Math.toRadians(a.latitude);
+    private double distance(GpggaMeasurement a, GpggaMeasurement b) {
+        int worldRadius = 63674447; // Radius of earth in meters
+        double bLatRadians = Math.toRadians(b.latitude);
+        double aLatRadians = Math.toRadians(a.latitude);
 
-        final double deltaLat = bLatRadians - aLatRadians;
-        final double deltaLon = Math.toRadians(b.longitude) - Math.toRadians(a.longitude);
+        double deltaLat = bLatRadians - aLatRadians;
+        double deltaLon = Math.toRadians(b.longitude) - Math.toRadians(a.longitude);
 
-        final double haversinePartA = Math.sin(deltaLat * 0.5) * Math.sin(deltaLat * 0.5) +
+        double haversinePartA = Math.sin(deltaLat * 0.5) * Math.sin(deltaLat * 0.5) +
                                       Math.sin(deltaLon * 0.5) * Math.sin(deltaLon * 0.5) *
                                       Math.cos(aLatRadians)    * Math.cos(bLatRadians);
-        final double haversinePartB = 2 * Math.atan2(Math.sqrt(haversinePartA), Math.sqrt(1 - haversinePartA));
+        double haversinePartB = 2 * Math.atan2(Math.sqrt(haversinePartA), Math.sqrt(1 - haversinePartA));
 
         return worldRadius * haversinePartB;
     }
