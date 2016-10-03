@@ -8,9 +8,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
-import android.media.MediaScannerConnection;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -20,6 +18,8 @@ import java.io.*;
 
 
 import java.security.AccessControlException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     boolean m_Started = false;
@@ -99,10 +99,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             sb.append(m_Monitor.measurements.get(i));
         }
         sb.append("</kml>");
-        String gh = getExternalCacheDir().getAbsolutePath();//.substring(0, getExternalCacheDir().getAbsolutePath().length()-5);
+        String gh = getExternalCacheDir().getAbsolutePath();
         File path=new File(gh,"CollectedData");
         path.mkdir();
-        File mypath=new File(path,"myfile.txt");
+        String fileName = "Measurement-" + new SimpleDateFormat("hh-mm-ss").format(new Date()).toString() + ".kml";
+        File mypath=new File(path, fileName);
         if (!writeToFile(mypath, sb.toString()))
         {
             return;
@@ -115,24 +116,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         m_MesaurementCountLabel.setText("Measurements: " + m_Monitor.measurements.size());
     }
 
-    private boolean writeToFile(File filename, String string){//String data,Context context) {
-//        try {
-//            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("config.txt", Context.MODE_PRIVATE));
-//            outputStreamWriter.write(data);
-//            outputStreamWriter.close();
-//        }
-//        catch (IOException e) {
-//            Log.e("Exception", "File write failed: " + e.toString());
-//        }
+    private boolean writeToFile(File filename, String string){
 
         try {
             BufferedWriter bfW = new BufferedWriter(new FileWriter(filename));
             bfW.write(string);
-            //bfW.flush();
             bfW.close();
-            //FileOutputStream outputStream = openFileOutput(filename.getAbsolutePath(), MODE_APPEND);
-            //outputStream.write(string.getBytes());
-            //outputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
