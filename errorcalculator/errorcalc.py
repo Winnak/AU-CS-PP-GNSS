@@ -498,6 +498,19 @@ T_POS_INTERPOLATED = [[10.18863528395544, 56.1718167368093, 0.0],
                       [10.188635760165015, 56.17175857143494, 0.0],
                       [10.18864609598842, 56.17177350242664, 0.0],
                       [10.188656431811825, 56.17178843341833, 0.0]]
+T_INT_TO_REAL = [0,15,25,81,126,153,173,201,215,219,245,271,311,374,468]
+
+# def generate_INT_TO_REAL():
+#     """ Finds the index of the real points in the interpolated """
+#     result = "["
+#     for i in range(len(T_POS_INTERPOLATED)):
+#         for real in T_POS:
+#             if T_POS_INTERPOLATED[i][0] is real[0] and T_POS_INTERPOLATED[i][1] is real[1] and T_POS_INTERPOLATED[i][2] is real[2]:
+#                 result += str(i) + ","
+#     result = result[:-1]
+#     result += "]"
+#     print(result)
+
 
 def main(arg):
     """ Main entry point of the program, takes 1 argument: the file path to the tested pos """

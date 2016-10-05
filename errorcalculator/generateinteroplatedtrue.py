@@ -4,7 +4,6 @@
 import math
 import xml.etree.ElementTree as ET
 
-
 METERSPERSEC = 2.0
 NAMESPACE = "{http://www.opengis.net/kml/2.2}"
 TRUE_ROOT = ET.fromstring("""<?xml version="1.0" encoding="UTF-8"?>
@@ -73,7 +72,6 @@ def main():
     for point in t_route:
         print(point)
 
-    
     for i in range(len(t_route) - 1):
         a = t_route[i]
         b = t_route[i+1]
@@ -85,7 +83,6 @@ def main():
             d.append(a[1] + (p + 1) * METERSPERSEC * (b[1] - a[1]) / magnitude)
             d.append(a[2] + (p + 1) * METERSPERSEC * (b[2] - a[2]) / magnitude)
             print(d)
-
 
 def xpath(*paths):
     """ Creates an xpath string with namespace """
