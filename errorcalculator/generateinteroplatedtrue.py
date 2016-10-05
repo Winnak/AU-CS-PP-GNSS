@@ -65,7 +65,7 @@ def main():
     t_route = list()
     for coordset in t_coordinates_text.split(" "):
         coordinate = list()
-        for coord in coordset.split(","):
+        for coord in coordset.split(",")[:-1]:
             coordinate.append(float(coord))
         t_route.append(coordinate)
 
@@ -78,11 +78,10 @@ def main():
         magnitude = distance(a, b)
         print(a)
         for p in range(int(magnitude / METERSPERSEC) - 1):
-            d = list()
-            d.append(a[0] + (p + 1) * METERSPERSEC * (b[0] - a[0]) / magnitude)
-            d.append(a[1] + (p + 1) * METERSPERSEC * (b[1] - a[1]) / magnitude)
-            d.append(a[2] + (p + 1) * METERSPERSEC * (b[2] - a[2]) / magnitude)
+            d = [a[0] + (p + 1) * METERSPERSEC * (b[0] - a[0]) / magnitude,
+                 a[1] + (p + 1) * METERSPERSEC * (b[1] - a[1]) / magnitude]
             print(d)
+
 
 def xpath(*paths):
     """ Creates an xpath string with namespace """
