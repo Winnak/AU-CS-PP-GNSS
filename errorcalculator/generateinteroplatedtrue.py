@@ -70,6 +70,10 @@ def main():
             coordinate.append(float(coord))
         t_route.append(coordinate)
 
+    for point in t_route:
+        print(point)
+
+    
     for i in range(len(t_route) - 1):
         a = t_route[i]
         b = t_route[i+1]
