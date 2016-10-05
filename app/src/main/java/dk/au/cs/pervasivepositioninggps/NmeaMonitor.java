@@ -219,7 +219,7 @@ public class NmeaMonitor implements NmeaListener {
     }
 
     private double distance(GpggaMeasurement a, GpggaMeasurement b) {
-        int worldRadius = 63674447; // Radius of earth in meters
+        int worldRadius = 6378137; // Radius of earth in meters
         double bLatRadians = Math.toRadians(b.latitude);
         double aLatRadians = Math.toRadians(a.latitude);
 
