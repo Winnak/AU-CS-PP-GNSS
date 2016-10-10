@@ -518,51 +518,54 @@ def main(arg):
     """ Main entry point of the program, takes 1 argument: the file path to the tested pos """
     root = ET.parse(arg).getroot()
     # T_POS_INTERPOLATED[current_second]
-    init_time = parse_time_stamp(root.find(xpath("Document", "Placemark", "TimeStamp", "when")).text)
+    init_time = parse_time_stamp(root.find(xpath("Document", "Placemark", "TimeStamp", "when")).text[10:])
 
     errors = list()
 
     placemarks = root.findall(xpath("Document", "Placemark"))
     for placemark in range(len(placemarks) - 1):
         ptext = placemarks[placemark].find(xpath("Point", "coordinates")).text.strip().split(",")[:-1]
-        p = [float(ptext[0]),float(ptext[1])]
+        p = [float(ptext[0]), float(ptext[1])]
 
-        t = parse_time_stamp(placemarks[placemark].find(xpath("TimeStamp", "when")).text) - init_time
-        t_next = parse_time_stamp(placemarks[placemark + 1].find(xpath("TimeStamp", "when")).text) - init_time
+        t = parse_time_stamp(placemarks[placemark].find(xpath("TimeStamp", "when")).text[10:]) - init_time
+        # t_next = parse_time_stamp(placemarks[placemark + 1].find(xpath("TimeStamp", "when")).text) - init_time
 
-        offset = 0
-
-        if ((t.seconds >= 180) and (t.seconds <= 304)): # pause 1
-            continue
-        elif ((t.seconds >= 580) and (t.seconds <= 704)): # pause 2
-            continue
-
-        if t.seconds > 304:
-            offset += 124
-            if t.seconds > 704:
-                offset += 124
-
-        # find next real
-        next_real = T_INT_TO_REAL[-1]
-        for real_index in range(len(T_INT_TO_REAL)):
-            if t.seconds - offset < T_INT_TO_REAL[real_index]:
-                next_real = T_INT_TO_REAL[real_index]
-                break
-
-        error_dist = 0
-
-        i = t.seconds - offset
-        while i < min(next_real * METERSPERSEC, t_next.seconds - offset):
-            error_dist += distance(p, T_POS_INTERPOLATED[int(i/2)])
-            i += 1
-
-        errors.append(error_dist)
-    errors.sort()
-    f = open(arg[:-4] + ".error", "w")
-    for error in errors:
-        # print(error)
-        f.write(str(error))
-        f.write("\n")
+        print(t, end='\t')
+        print(p)
+    #
+    #     offset = 0
+    #
+    #     if ((t.seconds >= 180) and (t.seconds <= 304)): # pause 1
+    #         continue
+    #     elif ((t.seconds >= 580) and (t.seconds <= 704)): # pause 2
+    #         continue
+    #
+    #     if t.seconds > 304:
+    #         offset += 124
+    #         if t.seconds > 704:
+    #             offset += 124
+    #
+    #     # find next real
+    #     next_real = T_INT_TO_REAL[-1]
+    #     for real_index in range(len(T_INT_TO_REAL)):
+    #         if t.seconds - offset < T_INT_TO_REAL[real_index]:
+    #             next_real = T_INT_TO_REAL[real_index]
+    #             break
+    #
+    #     error_dist = 0
+    #
+    #     i = t.seconds - offset
+    #     while i < min(next_real * METERSPERSEC, t_next.seconds - offset):
+    #         error_dist += distance(p, T_POS_INTERPOLATED[int(i/2)])
+    #         i += 1
+    #
+    #     errors.append(error_dist)
+    # errors.sort()
+    # f = open(arg[:-4] + ".error", "w")
+    # for error in errors:
+    #     # print(error)
+    #     f.write(str(error))
+    #     f.write("\n")
 
 def xpath(*paths):
     """ Creates an xpath string with namespace """
@@ -574,8 +577,8 @@ def xpath(*paths):
     return _xpath[:-1]
 
 def parse_time_stamp(timestring):
-    """ converts kml time string to a datetime """
-    return datetime.datetime.strptime(timestring, "%Y-%m-%dT%I:%M:%SZ")
+    """ converts kml time string to a datetime """ #%Y-%m-%dT%I
+    return datetime.datetime.strptime(timestring, "T%H:%M:%SZ")
 
 def distance(a, b):
     """ Calculates the distance between to latitudes and longitudes """
