@@ -518,7 +518,7 @@ def main(arg):
     """ Main entry point of the program, takes 1 argument: the file path to the tested pos """
     root = ET.parse(arg).getroot()
     # T_POS_INTERPOLATED[current_second]
-    init_time = parse_time_stamp(root.find(xpath("Document", "Placemark", "TimeStamp", "when")).text[10:])
+    init_time = parse_time_stamp(root.find(xpath("Document", "Placemark", "TimeStamp", "when")).text)
 
     errors = list()
 
@@ -527,7 +527,7 @@ def main(arg):
         ptext = placemarks[placemark].find(xpath("Point", "coordinates")).text.strip().split(",")[:-1]
         p = [float(ptext[0]), float(ptext[1])]
 
-        t = parse_time_stamp(placemarks[placemark].find(xpath("TimeStamp", "when")).text[10:]) - init_time
+        t = parse_time_stamp(placemarks[placemark].find(xpath("TimeStamp", "when")).text) - init_time
         # t_next = parse_time_stamp(placemarks[placemark + 1].find(xpath("TimeStamp", "when")).text) - init_time
 
         print(t, end='\t')
@@ -577,8 +577,8 @@ def xpath(*paths):
     return _xpath[:-1]
 
 def parse_time_stamp(timestring):
-    """ converts kml time string to a datetime """ #%Y-%m-%dT%I
-    return datetime.datetime.strptime(timestring, "T%H:%M:%SZ")
+    """ converts kml time string to a datetime """ #%I
+    return datetime.datetime.strptime(timestring, "%Y-%m-%dT%H:%M:%SZ")
 
 def distance(a, b):
     """ Calculates the distance between to latitudes and longitudes """
