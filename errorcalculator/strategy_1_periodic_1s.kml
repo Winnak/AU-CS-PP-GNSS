@@ -2,22 +2,6 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
 <Document>
 	<Placemark>
-		<TimeStamp><when>2016-10-04T9:54:22Z</when></TimeStamp>
-		<Point>
-			<coordinates>
-				10.18855975,56.17167345,0
-			</coordinates>
-		</Point>
-	</Placemark>
-	<Placemark>
-		<TimeStamp><when>2016-10-04T9:54:23Z</when></TimeStamp>
-		<Point>
-			<coordinates>
-				10.188579283333333,56.171753366666664,0
-			</coordinates>
-		</Point>
-	</Placemark>
-	<Placemark>
 		<TimeStamp><when>2016-10-04T9:54:28Z</when></TimeStamp>
 		<Point>
 			<coordinates>
