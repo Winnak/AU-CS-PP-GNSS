@@ -569,12 +569,85 @@ class Placemark(object):
 # paused 3*60 = 180 -> 5*60 + 4 = 304
 # paused 9*60 + 40 = 580 -> 11*60 + 44 = 704
 
+def TruthDistance(time, time2):
+    speed = 2.0
+    if time >= 180 and time <= 304: #4
+        if time2 >= 180 and time <= 304:
+            return 0
+        else:
+            time = 304
+    elif time >= 580 and time <= 704: #12
+        if time2 >= 580 and time <= 704:
+            return 0
+        else:
+            time = 704
+    return (time2 - time) * speed
+
+def TruthPoint(time, sec, places, truthTimeList):
+    if time >= 180 and time <= 304:
+        return places[4]
+    if time >= 580 and time <= 704:
+        return places[12]
+        #print(truthTimeList[xTruth])
+    for aTruth in range(1, len(truthTimeList)):
+        if time + sec < truthTimeList[aTruth]:
+            if aTruth == 4 or aTruth == 12:
+                extraTime = 124
+            else:
+                extraTime = 0
+            return createPlacemark(places[aTruth - 1], places[aTruth], time + sec, (time + sec - truthTimeList[aTruth - 1]) / (truthTimeList[aTruth] - truthTimeList[aTruth - 1] - extraTime))
+    #print(str(time) + ", " + str(sec))
+    return createPlacemark(places[14], places[15], time + sec, (time + sec - truthTimeList[14]) / (truthTimeList[15] - truthTimeList[14]))
+
+
+def createPlacemark(place, place2, time, dif ):
+    lat = place.latitude + (place.latitude - place2.latitude) * dif
+    lon = place.longitude + (place.longitude - place2.longitude) * dif
+    return Placemark(lat, lon, time)
+
+T_TIME = [0,
+          13,
+          13 + 15,
+          28 + 100,
+          128 + 171,
+          299 + 43,
+          342 + 18,
+          360 + 42,
+          402 + 40,
+          442 + 12,
+          454 + 25,
+          479 + 42,
+          521 + 178,
+          787,
+          868,
+          876]
+
+
+
+
 def main(arg):
     """ Main entry point of the program, takes 1 argument: the file path to the tested pos """
+    #print("Jeg er startet")
     errors = list()
     placemarks = Placemark.parse_file(filepath=arg)
-    for placemark in placemarks:
-        print(placemark)
+    #print(len(placemarks) - 1)
+
+    print(placemarks[0].time.seconds)
+    print(placemarks[len(placemarks) - 1].time.seconds)
+    print(T_TIME[0])
+    print(T_TIME[len(T_TIME) - 1])
+
+    for xPlace in range(0, len(placemarks) - 1):
+        #print(placemark)
+        timeStart = placemarks[xPlace].time
+        speed = 2.0
+        dist = TruthDistance(placemarks[xPlace].time.seconds, placemarks[xPlace + 1].time.seconds)
+        fakePoints = int(dist / speed)
+        if dist / speed == fakePoints and dist != 0:
+            fakePoints = fakePoints - 1
+        #print(fakePoints)
+        for jError in range(0,fakePoints):
+            errors.append(Placemark.distance(placemarks[xPlace], TruthPoint(placemarks[xPlace].time.seconds, jError, placemarks, T_TIME)))
         # offset = 0
         #
         # if ((t.seconds >= 180) and (t.seconds <= 304)): # pause 1
@@ -603,11 +676,13 @@ def main(arg):
         #
         # errors.append(error_dist)
     errors.sort()
-    # f = open(arg[:-4] + ".error", "w")
+    f = open(arg[:-4] + ".error.csv", "w")
     for error in errors:
-        print(error)
-        # f.write(str(error))
-        # f.write("\n")
+        #print(error)
+        f.write(str(error).split(".")[0] + "," + str(error).split(".")[1])
+        f.write("\n")
+
+
 
 
 if __name__ == '__main__':
