@@ -9,7 +9,6 @@ import os.path
 import xml.etree.ElementTree as ET
 
 METERSPERSEC = 2.0
-NAMESPACE = "{http://www.opengis.net/kml/2.2}"
 T_POS = [[10.18863528395544, 56.1718167368093],
          [10.18843868032121, 56.17161397146886],
          [10.18825312495371, 56.17161690159397],
@@ -500,6 +499,62 @@ T_POS_INTERPOLATED = [[10.18863528395544, 56.1718167368093],
                       [10.188656431811825, 56.17178843341833]]
 T_INT_TO_REAL = [0,15,25,81,126,153,173,201,215,219,245,271,311,374,468,472]
 
+
+class Placemark(object):
+    """docstring for Placemark."""
+    _NAMESPACE = "{http://www.opengis.net/kml/2.2}"
+
+    def __init__(self, lat, lon, time):
+        super(Placemark, self).__init__()
+        self.latitude = lat
+        self.longitude = lon
+        self.time = time
+
+    @staticmethod
+    def parse_file(filepath):
+        root = ET.parse(filepath).getroot()
+        tags = root.findall(Placemark.xpath("Document", "Placemark"))
+        placemarks = list()
+        init_time = Placemark.parse_time(root.find(Placemark.xpath("Document", "Placemark", "TimeStamp", "when")).text)
+        for tag in tags:
+            coords = tag.find(Placemark.xpath("Point", "coordinates")).text.strip().split(",")[:-1]
+            time = tag.find(Placemark.xpath("TimeStamp", "when")).text
+            placemarks.append(Placemark(lat=float(coords[0]),
+                                        lon=float(coords[1]),
+                                        time=(Placemark.parse_time(time) - init_time)))
+        return placemarks
+
+    @staticmethod
+    def parse_time(timestring):
+        """ Converts kml time string to a datetime """ #%I
+        return datetime.datetime.strptime(timestring, "%Y-%m-%dT%H:%M:%SZ")
+
+    @staticmethod
+    def xpath(*paths):
+        """ Creates an xpath string with namespace """
+        _xpath = ""
+        for path in paths:
+            _xpath += Placemark._NAMESPACE
+            _xpath += path
+            _xpath += "/"
+        return _xpath[:-1]
+
+    @staticmethod
+    def distance(a, b):
+        """ Calculates the distance between two placemarks """
+        a_lat = math.radians(a.latitude)
+        b_lat = math.radians(b.latitude)
+        a_lon = math.radians(a.longitude)
+        b_lon = math.radians(b.longitude)
+        delta_lat = b_lat - a_lat
+        delta_lon = b_lon - a_lon
+        haversine_A = (math.sin(delta_lat * 0.5) * math.sin(delta_lat * 0.5) +
+                       math.sin(delta_lon * 0.5) * math.sin(delta_lon * 0.5) *
+                       math.cos(a_lat) * math.cos(b_lat))
+        haversine_B = 2 * math.atan2(math.sqrt(haversine_A), math.sqrt(1 - haversine_A))
+        return 6378137 * haversine_B
+
+
 # def generate_INT_TO_REAL():
 #     """ Finds the index of the real points in the interpolated """
 #     result = "["
@@ -516,83 +571,44 @@ T_INT_TO_REAL = [0,15,25,81,126,153,173,201,215,219,245,271,311,374,468,472]
 
 def main(arg):
     """ Main entry point of the program, takes 1 argument: the file path to the tested pos """
-    root = ET.parse(arg).getroot()
-    # T_POS_INTERPOLATED[current_second]
-    init_time = parse_time_stamp(root.find(xpath("Document", "Placemark", "TimeStamp", "when")).text)
-
     errors = list()
-
-    placemarks = root.findall(xpath("Document", "Placemark"))
-    for placemark in range(len(placemarks) - 1):
-        ptext = placemarks[placemark].find(xpath("Point", "coordinates")).text.strip().split(",")[:-1]
-        p = [float(ptext[0]), float(ptext[1])]
-
-        t = parse_time_stamp(placemarks[placemark].find(xpath("TimeStamp", "when")).text) - init_time
-        # t_next = parse_time_stamp(placemarks[placemark + 1].find(xpath("TimeStamp", "when")).text) - init_time
-
-        print(t, end='\t')
-        print(p)
-    #
-    #     offset = 0
-    #
-    #     if ((t.seconds >= 180) and (t.seconds <= 304)): # pause 1
-    #         continue
-    #     elif ((t.seconds >= 580) and (t.seconds <= 704)): # pause 2
-    #         continue
-    #
-    #     if t.seconds > 304:
-    #         offset += 124
-    #         if t.seconds > 704:
-    #             offset += 124
-    #
-    #     # find next real
-    #     next_real = T_INT_TO_REAL[-1]
-    #     for real_index in range(len(T_INT_TO_REAL)):
-    #         if t.seconds - offset < T_INT_TO_REAL[real_index]:
-    #             next_real = T_INT_TO_REAL[real_index]
-    #             break
-    #
-    #     error_dist = 0
-    #
-    #     i = t.seconds - offset
-    #     while i < min(next_real * METERSPERSEC, t_next.seconds - offset):
-    #         error_dist += distance(p, T_POS_INTERPOLATED[int(i/2)])
-    #         i += 1
-    #
-    #     errors.append(error_dist)
-    # errors.sort()
+    placemarks = Placemark.parse_file(filepath=arg)
+    for placemark in placemarks:
+        print(placemark)
+        # offset = 0
+        #
+        # if ((t.seconds >= 180) and (t.seconds <= 304)): # pause 1
+        #     continue
+        # elif ((t.seconds >= 580) and (t.seconds <= 704)): # pause 2
+        #     continue
+        #
+        # if t.seconds > 304:
+        #     offset += 124
+        #     if t.seconds > 704:
+        #         offset += 124
+        #
+        # # find next real
+        # next_real = T_INT_TO_REAL[-1]
+        # for real_index in range(len(T_INT_TO_REAL)):
+        #     if t.seconds - offset < T_INT_TO_REAL[real_index]:
+        #         next_real = T_INT_TO_REAL[real_index]
+        #         break
+        #
+        # error_dist = 0
+        #
+        # i = t.seconds - offset
+        # while i < min(next_real * METERSPERSEC, t_next.seconds - offset):
+        #     error_dist += distance(p, T_POS_INTERPOLATED[int(i/2)])
+        #     i += 1
+        #
+        # errors.append(error_dist)
+    errors.sort()
     # f = open(arg[:-4] + ".error", "w")
-    # for error in errors:
-    #     # print(error)
-    #     f.write(str(error))
-    #     f.write("\n")
+    for error in errors:
+        print(error)
+        # f.write(str(error))
+        # f.write("\n")
 
-def xpath(*paths):
-    """ Creates an xpath string with namespace """
-    _xpath = ""
-    for path in paths:
-        _xpath += NAMESPACE
-        _xpath += path
-        _xpath += "/"
-    return _xpath[:-1]
-
-def parse_time_stamp(timestring):
-    """ converts kml time string to a datetime """ #%I
-    return datetime.datetime.strptime(timestring, "%Y-%m-%dT%H:%M:%SZ")
-
-def distance(a, b):
-    """ Calculates the distance between to latitudes and longitudes """
-    a_lat = math.radians(a[0])
-    b_lat = math.radians(b[0])
-    a_lon = math.radians(a[1])
-    b_lon = math.radians(b[1])
-    delta_lat = b_lat - a_lat
-    delta_lon = b_lon - a_lon
-    haversine_A = (math.sin(delta_lat * 0.5) * math.sin(delta_lat * 0.5) +
-                   math.sin(delta_lon * 0.5) * math.sin(delta_lon * 0.5) *
-                   math.cos(a_lat) * math.cos(b_lat))
-    haversine_B = 2 * math.atan2(math.sqrt(haversine_A), math.sqrt(1 - haversine_A))
-    return 6378137 * haversine_B
 
 if __name__ == '__main__':
     if len(sys.argv) is 2:
